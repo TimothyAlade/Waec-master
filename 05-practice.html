@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice - WAEC Master</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f7fb; }
+        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: white; }
+        .logo span { color: #f9a826; }
+        .back-btn { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; text-decoration: none; color: white; cursor: pointer; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .practice-box { background: white; border-radius: 25px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .question { font-size: 20px; margin: 20px 0; line-height: 1.4; font-weight: 500; }
+        .option { background: #f5f7fb; border: 2px solid #e0e0e0; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 15px; }
+        .option:hover { background: #e8eaf6; border-color: #764ba2; }
+        .option.selected { background: #764ba2; border-color: #764ba2; color: white; }
+        .option-letter { font-weight: bold; font-size: 18px; min-width: 30px; }
+        .option-text { flex: 1; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; gap: 15px; flex-wrap: wrap; }
+        .btn { padding: 12px 25px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: linear-gradient(135deg, #764ba2, #667eea); color: white; }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .progress-text { text-align: center; margin-bottom: 20px; color: #666; font-size: 14px; }
+        .regeneration-badge { background: #e8f5e9; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
+        .topic-header { background: #f0f0f0; padding: 10px 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        @media (max-width: 600px) { .practice-box { padding: 20px; } .question { font-size: 16px; } .option { padding: 12px; } .btn { padding: 10px 20px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo" onclick="history.back()" style="cursor:pointer;">← WAEC <span>Master</span></div>
+        <span id="premiumStatus" style="background:#f9a826; padding:5px 15px; border-radius:30px; color:#1a1a2e; font-size:14px;">Loading...</span>
+    </div>
+    
+    <div class="container">
+        <div class="practice-box" id="practiceBox">Loading questions...</div>
+    </div>
+    
+    <script>
+        let urlParams = new URLSearchParams(window.location.search);
+        let subjectId = urlParams.get('subject');
+        let chapterNum = parseInt(urlParams.get('chapter'));
+        let topicName = decodeURIComponent(urlParams.get('topic') || 'General');
+        
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) window.location.href = "01-login.html";
+        
+        let currentIndex = 0;
+        let answers = [];
+        let questions = [];
+        let startTime = Date.now();
+        
+        // ========== QUESTION GENERATOR (Fixed - All options have 4 choices) ==========
+        function generateQuestions() {
+            let today = new Date();
+            let daySeed = today.getDate() + today.getMonth() * 31 + today.getFullYear() * 365;
+            let attemptCount = currentUser.chapterAttempts?.[`${subjectId}_ch${chapterNum}`] || 0;
+            let questionSeed = (daySeed + chapterNum * 1000 + attemptCount * 100) % 10000;
+            
+            let questionsList = [];
+            
+            // Generate 10 questions (all with 4 options)
+            for (let i = 0; i < 10; i++) {
+                let seed = (questionSeed + i * 37) % 1000;
+                
+                let questionText = getQuestionText(topicName, seed, i);
+                let correctAnswer = getCorrectAnswer(questionText, seed);
+                let options = generateOptions(correctAnswer, seed);
+                let explanation = getExplanation(questionText, correctAnswer);
+                
+                questionsList.push({
+                    text: questionText,
+                    options: options,
+                    correct: options.indexOf(correctAnswer),
+                    explanation: explanation
+                });
+            }
+            
+            // For premium retry, shuffle and regenerate
+            if (currentUser.isPremium && attemptCount > 0) {
+                let shuffled = [];
+                let offset = (attemptCount * 13) % questionsList.length;
+                for (let i = 0; i < questionsList.length; i++) {
+                    shuffled.push(questionsList[(offset + i) % questionsList.length]);
+                }
+                return shuffled;
+            }
+            return questionsList;
+        }
+        
+        function getQuestionText(topic, seed, index) {
+            const mathQuestions = [
+                `Solve for x: ${(seed % 5 + 2)}x + ${(seed % 10 + 3)} = ${(seed % 5 + 2) * 5 + (seed % 10 + 3)}`,
+                `What is ${(seed % 20 + 10)}% of ${(seed % 50 + 50)}?`,
+                `Find the value of ${(seed % 8 + 2)}² × ${(seed % 8 + 2)}³`,
+                `Simplify: ${(seed % 5 + 2)}x + ${(seed % 3 + 1)}y - ${(seed % 4 + 1)}x + ${(seed % 3 + 2)}y`,
+                `What is the square root of ${(seed % 10 + 4) * (seed % 10 + 4)}?`,
+                `Convert ${(seed % 100 + 10)} to Roman numerals`,
+                `What is the LCM of ${(seed % 8 + 4)} and ${(seed % 8 + 6)}?`,
+                `What is the HCF of ${(seed % 10 + 6)} and ${(seed % 10 + 9)}?`
+            ];
+            
+            const englishQuestions = [
+                `What is the plural of "${['child','woman','man','tooth','foot'][seed % 5]}"?`,
+                `Choose the correct spelling of '${['accommodate','necessary','embarrass','millennium'][seed % 4]}'`,
+                `What is the synonym of "${['happy','big','fast','smart','brave'][seed % 5]}"?`,
+                `What is the antonym of "${['hot','good','light','high','thick'][seed % 5]}"?`,
+                `Identify the noun in: "${['The boy ran fast','She sings well','They arrived late'][seed % 3]}"`
+            ];
+            
+            const physicsQuestions = [
+                `What is the SI unit of ${['force','energy','power','pressure','charge'][seed % 5]}?`,
+                `A car accelerates at ${(seed % 5 + 2)} m/s² for ${(seed % 5 + 3)} seconds from rest. Find final velocity.`,
+                `What is the formula for ${['speed','velocity','acceleration','force','work'][seed % 5]}?`
+            ];
+            
+            if (topic.includes("Math") || subjectId === "math") {
+                return mathQuestions[seed % mathQuestions.length];
+            } else if (topic.includes("English") || subjectId === "english") {
+                return englishQuestions[seed % englishQuestions.length];
+            } else if (topic.includes("Physics") || subjectId === "physics") {
+                return physicsQuestions[seed % physicsQuestions.length];
+            }
+            return `What is the correct answer to this WAEC question about ${topic}?`;
+        }
+        
+        function getCorrectAnswer(question, seed) {
+            if (question.includes("Solve for x")) {
+                let match = question.match(/(\d+)x \+ (\d+) = (\d+)/);
+                if (match) return ((parseInt(match[3]) - parseInt(match[2])) / parseInt(match[1])).toString();
+            }
+            if (question.includes("% of")) {
+                let match = question.match(/(\d+)% of (\d+)/);
+                if (match) return (parseInt(match[1]) * parseInt(match[2]) / 100).toString();
+            }
+            if (question.includes("² ×")) {
+                let match = question.match(/(\d+)² × (\d+)³/);
+                if (match) return (Math.pow(parseInt(match[1]), 2) * Math.pow(parseInt(match[2]), 3)).toString();
+            }
+            if (question.includes("square root")) {
+                let match = question.match(/square root of (\d+)/);
+                if (match) return Math.sqrt(parseInt(match[1])).toString();
+            }
+            if (question.includes("plural")) return "children";
+            if (question.includes("spelling")) return "accommodate";
+            if (question.includes("SI unit of force")) return "Newton (N)";
+            if (question.includes("SI unit of energy")) return "Joule (J)";
+            if (question.includes("SI unit of power")) return "Watt (W)";
+            return ["Option A", "Option B", "Option C", "Option D"][seed % 4];
+        }
+        
+        function generateOptions(correctAnswer, seed) {
+            let options = [correctAnswer];
+            let wrongs = [];
+            
+            if (!isNaN(parseFloat(correctAnswer))) {
+                let num = parseFloat(correctAnswer);
+                wrongs = [(num + 1).toString(), (num - 1).toString(), (num + 2).toString(), (num * 2).toString(), (num / 2).toString()];
+            } else {
+                wrongs = [`Not ${correctAnswer}`, `Alternative`, `Different value`, `Another option`];
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                options.push(wrongs[(seed + i) % wrongs.length]);
+            }
+            
+            // Shuffle options
+            for (let i = options.length - 1; i > 0; i--) {
+                let j = (seed + i) % (i + 1);
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            return options;
+        }
+        
+        function getExplanation(question, answer) {
+            return `💡 Explanation: For "${question}", the correct answer is "${answer}". This follows WAEC standard examination pattern. Practice similar questions to master this topic.`;
+        }
+        
+        questions = generateQuestions();
+        answers = new Array(questions.length).fill(undefined);
+        
+        function render() {
+            let q = questions[currentIndex];
+            let html = `
+                <div class="topic-header">
+                    <span>📚 ${topicName} - Chapter ${chapterNum}</span>
+                    <span>⏱️ ${Math.floor((Date.now() - startTime) / 60)}:${((Date.now() - startTime) % 60).toString().padStart(2,'0')}</span>
+                </div>
+                <div class="progress-text">Question ${currentIndex+1} of ${questions.length}</div>`;
+            
+            if (currentUser.isPremium && (currentUser.chapterAttempts?.[`${subjectId}_ch${chapterNum}`] || 0) > 0) {
+                html += `<div class="regeneration-badge">🔄 PREMIUM: Fresh questions generated for this retry!</div>`;
+            }
+            
+            html += `<div class="question">${currentIndex+1}. ${q.text}</div>`;
+            
+            q.options.forEach((opt, i) => {
+                let letter = String.fromCharCode(65 + i);
+                html += `<div class="option ${answers[currentIndex] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
+                    <span class="option-letter">${letter}.</span>
+                    <span class="option-text">${opt}</span>
+                </div>`;
+            });
+            
+            html += `<div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="prevQuestion()" ${currentIndex === 0 ? 'disabled' : ''}>← Previous</button>`;
+            
+            if (currentIndex === questions.length - 1) {
+                html += `<button class="btn btn-primary" onclick="submitPractice()">📝 Submit All</button>`;
+            } else {
+                html += `<button class="btn btn-primary" onclick="nextQuestion()">Next →</button>`;
+            }
+            html += `</div>`;
+            
+            document.getElementById('practiceBox').innerHTML = html;
+            document.getElementById('premiumStatus').innerHTML = currentUser.isPremium ? '⭐ Premium Active' : '🔓 Free User';
+        }
+        
+        function selectAnswer(i) { answers[currentIndex] = i; render(); }
+        function nextQuestion() { if (currentIndex < questions.length-1) { currentIndex++; render(); } }
+        function prevQuestion() { if (currentIndex > 0) { currentIndex--; render(); } }
+        
+        function submitPractice() {
+            if (answers.includes(undefined)) {
+                alert("⚠️ Please answer all questions before submitting!");
+                return;
+            }
+            
+            let correct = 0;
+            let detailedResults = [];
+            answers.forEach((a, i) => {
+                let isCorrect = a === questions[i].correct;
+                if (isCorrect) correct++;
+                detailedResults.push({
+                    question: questions[i].text,
+                    userAnswer: questions[i].options[a],
+                    correctAnswer: questions[i].options[questions[i].correct],
+                    isCorrect: isCorrect,
+                    explanation: questions[i].explanation
+                });
+            });
+            
+            let score = Math.round((correct / questions.length) * 100);
+            
+            // Update user data
+            if (!currentUser.weakTopics) currentUser.weakTopics = {};
+            if (!currentUser.weakTopics[topicName]) {
+                currentUser.weakTopics[topicName] = { attempts: 0, correctTotal: 0, accuracy: 0 };
+            }
+            currentUser.weakTopics[topicName].attempts++;
+            currentUser.weakTopics[topicName].correctTotal += correct;
+            currentUser.weakTopics[topicName].accuracy = Math.round((currentUser.weakTopics[topicName].correctTotal / (currentUser.weakTopics[topicName].attempts * questions.length)) * 100);
+            
+            if (!currentUser.chapterAttempts) currentUser.chapterAttempts = {};
+            currentUser.chapterAttempts[`${subjectId}_ch${chapterNum}`] = (currentUser.chapterAttempts[`${subjectId}_ch${chapterNum}`] || 0) + 1;
+            
+            if (!currentUser.chapterScores) currentUser.chapterScores = {};
+            if (!currentUser.completedChapters) currentUser.completedChapters = {};
+            
+            if (score >= 50) {
+                currentUser.chapterScores[`${subjectId}_ch${chapterNum}`] = score;
+                currentUser.completedChapters[`${subjectId}_ch${chapterNum}`] = score;
+            }
+            
+            currentUser.totalQuestions = (currentUser.totalQuestions || 0) + questions.length;
+            currentUser.totalCorrect = (currentUser.totalCorrect || 0) + correct;
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            let resultsData = {
+                subjectId: subjectId,
+                chapterNum: chapterNum,
+                topicName: topicName,
+                score: score,
+                correct: correct,
+                total: questions.length,
+                detailedResults: detailedResults,
+                isPremium: currentUser.isPremium,
+                timeSpent: Math.floor((Date.now() - startTime) / 1000)
+            };
+            localStorage.setItem('practiceResults', JSON.stringify(resultsData));
+            window.location.href = "06-results.html";
+        }
+        
+        render();
+    </script>
+</body>
+</html>

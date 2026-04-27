@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WAEC Master</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f7fb; }
+        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: white; }
+        .logo span { color: #f9a826; }
+        .premium-badge { background: #f9a826; color: #1a1a2e; padding: 8px 16px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .logout-btn { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 14px; }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        
+        .progress-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 25px; }
+        .progress-bar { background: #e0e0e0; border-radius: 20px; height: 10px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { background: linear-gradient(90deg, #4CAF50, #8BC34A); width: 0%; height: 10px; border-radius: 20px; transition: width 0.5s; }
+        .streak-card { background: linear-gradient(135deg, #FF6B6B, #FF8E53); border-radius: 15px; padding: 15px; color: white; text-align: center; margin-top: 15px; }
+        
+        .weak-topics-card { background: #fff3e0; border-radius: 15px; padding: 20px; margin-top: 15px; }
+        .weak-topic-item { background: white; padding: 12px; margin: 8px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; flex-wrap: wrap; gap: 10px; }
+        .weak-topic-item:hover { background: #f0f0f0; }
+        .priority-high { border-left: 4px solid #f44336; }
+        .priority-medium { border-left: 4px solid #ff9800; }
+        .priority-low { border-left: 4px solid #4CAF50; }
+        
+        .subject-section { margin-bottom: 30px; }
+        .section-title { font-size: 22px; font-weight: bold; margin: 20px 0 15px 0; color: #1a1a2e; border-left: 4px solid #f9a826; padding-left: 15px; }
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .subject-card { background: white; border-radius: 15px; padding: 20px; text-decoration: none; color: #333; display: block; box-shadow: 0 2px 10px rgba(0,0,0,0.08); transition: transform 0.3s; }
+        .subject-card:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .subject-icon { font-size: 40px; }
+        .subject-name { font-size: 18px; font-weight: bold; margin: 8px 0; }
+        .subject-stats { font-size: 11px; color: #888; }
+        .free-badge { background: #e8f5e9; color: #4CAF50; padding: 2px 8px; border-radius: 20px; font-size: 10px; display: inline-block; margin-top: 5px; }
+        
+        @media (max-width: 600px) { .subject-grid { grid-template-columns: 1fr 1fr; } .subject-icon { font-size: 30px; } .subject-name { font-size: 14px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="03-dashboard.html" class="logo">WAEC <span>Master</span></a>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span id="userName" style="font-size: 14px;">👋 Loading...</span>
+            <a href="07-upgrade.html" class="premium-badge" id="premiumBadge">🔒 Upgrade</a>
+            <span class="logout-btn" onclick="logout()">🚪 Logout</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="progress-card">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="streak-card" id="streakCard">🔥 0 Day Streak</div>
+            <div id="weakTopicsArea"></div>
+        </div>
+        
+        <div id="subjectsContainer"></div>
+    </div>
+    
+    <script>
+        // ========== ALL 39 WAEC SUBJECTS ==========
+        const subjectCategories = [
+            { name: "📐 CORE SCIENCES", subjects: [
+                { id: "math", name: "Mathematics", icon: "📐", freeChapters: 4, totalChapters: 12 },
+                { id: "english", name: "English Language", icon: "📖", freeChapters: 4, totalChapters: 12 },
+                { id: "physics", name: "Physics", icon: "⚡", freeChapters: 4, totalChapters: 12 },
+                { id: "chemistry", name: "Chemistry", icon: "🧪", freeChapters: 4, totalChapters: 12 },
+                { id: "biology", name: "Biology", icon: "🧬", freeChapters: 4, totalChapters: 12 }
+            ]},
+            { name: "🏛️ HUMANITIES", subjects: [
+                { id: "economics", name: "Economics", icon: "📊", freeChapters: 3, totalChapters: 10 },
+                { id: "government", name: "Government", icon: "🏛️", freeChapters: 3, totalChapters: 10 },
+                { id: "crs", name: "CRS", icon: "⛪", freeChapters: 3, totalChapters: 10 },
+                { id: "irs", name: "IRS", icon: "🕌", freeChapters: 3, totalChapters: 10 },
+                { id: "literature", name: "Literature", icon: "📚", freeChapters: 3, totalChapters: 10 },
+                { id: "history", name: "History", icon: "🏺", freeChapters: 3, totalChapters: 9 },
+                { id: "geography", name: "Geography", icon: "🌍", freeChapters: 3, totalChapters: 9 },
+                { id: "french", name: "French", icon: "🇫🇷", freeChapters: 3, totalChapters: 8 },
+                { id: "igbo", name: "Igbo", icon: "📿", freeChapters: 2, totalChapters: 8 },
+                { id: "yoruba", name: "Yoruba", icon: "🥁", freeChapters: 2, totalChapters: 8 },
+                { id: "hausa", name: "Hausa", icon: "🐪", freeChapters: 2, totalChapters: 8 },
+                { id: "arabic", name: "Arabic", icon: "📜", freeChapters: 2, totalChapters: 8 }
+            ]},
+            { name: "💰 COMMERCIAL", subjects: [
+                { id: "commerce", name: "Commerce", icon: "🏪", freeChapters: 3, totalChapters: 9 },
+                { id: "accounting", name: "Accounting", icon: "💰", freeChapters: 3, totalChapters: 10 },
+                { id: "business", name: "Business Mgmt", icon: "📈", freeChapters: 3, totalChapters: 8 },
+                { id: "insurance", name: "Insurance", icon: "🛡️", freeChapters: 2, totalChapters: 7 },
+                { id: "marketing", name: "Marketing", icon: "📢", freeChapters: 2, totalChapters: 7 }
+            ]},
+            { name: "🔧 TECHNICAL", subjects: [
+                { id: "agric", name: "Agric Science", icon: "🌾", freeChapters: 3, totalChapters: 10 },
+                { id: "technical", name: "Technical Drawing", icon: "✏️", freeChapters: 3, totalChapters: 8 },
+                { id: "computer", name: "Computer Studies", icon: "💻", freeChapters: 3, totalChapters: 8 },
+                { id: "electronics", name: "Electronics", icon: "🔌", freeChapters: 2, totalChapters: 7 },
+                { id: "woodwork", name: "Woodwork", icon: "🪵", freeChapters: 2, totalChapters: 6 },
+                { id: "metalwork", name: "Metalwork", icon: "⚙️", freeChapters: 2, totalChapters: 6 },
+                { id: "building", name: "Building Const", icon: "🏗️", freeChapters: 2, totalChapters: 6 },
+                { id: "auto", name: "Auto Mechanics", icon: "🚗", freeChapters: 2, totalChapters: 7 }
+            ]},
+            { name: "🏠 HOME ECONOMICS", subjects: [
+                { id: "food", name: "Food & Nutrition", icon: "🍲", freeChapters: 2, totalChapters: 7 },
+                { id: "clothing", name: "Clothing & Textile", icon: "👗", freeChapters: 2, totalChapters: 6 },
+                { id: "home_eco", name: "Home Economics", icon: "🏠", freeChapters: 2, totalChapters: 7 },
+                { id: "health", name: "Health Education", icon: "🏥", freeChapters: 2, totalChapters: 7 }
+            ]},
+            { name: "🎨 FINE ARTS", subjects: [
+                { id: "fine_art", name: "Fine Art", icon: "🎨", freeChapters: 2, totalChapters: 7 },
+                { id: "music", name: "Music", icon: "🎵", freeChapters: 2, totalChapters: 7 }
+            ]},
+            { name: "⚽ PHYSICAL EDUCATION", subjects: [
+                { id: "physical", name: "Physical Edu", icon: "⚽", freeChapters: 2, totalChapters: 6 }
+            ]}
+        ];
+        
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = "01-login.html";
+        }
+        
+        function updateUI() {
+            document.getElementById('userName').innerHTML = `👋 ${currentUser.name || 'Student'}`;
+            let premiumBadge = document.getElementById('premiumBadge');
+            if (currentUser.isPremium) {
+                premiumBadge.innerHTML = '⭐ Premium';
+                premiumBadge.style.background = '#4CAF50';
+            } else {
+                premiumBadge.innerHTML = '🔒 Upgrade';
+                premiumBadge.style.background = '#f9a826';
+            }
+            
+            // Calculate progress
+            let totalChapters = 0;
+            let completedChapters = 0;
+            for (let cat of subjectCategories) {
+                for (let subj of cat.subjects) {
+                    totalChapters += subj.totalChapters;
+                    for (let i = 1; i <= subj.totalChapters; i++) {
+                        if (currentUser.completedChapters && currentUser.completedChapters[`${subj.id}_ch${i}`]) {
+                            completedChapters++;
+                        }
+                    }
+                }
+            }
+            let percent = totalChapters > 0 ? (completedChapters / totalChapters) * 100 : 0;
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('streakCard').innerHTML = `🔥 ${currentUser.streak || 0} Day Streak! Keep practicing!`;
+            
+            // Weak topics
+            let weakTopics = [];
+            if (currentUser.weakTopics) {
+                for (let [topic, data] of Object.entries(currentUser.weakTopics)) {
+                    if (data.accuracy < 60) {
+                        weakTopics.push({
+                            topic: topic,
+                            accuracy: data.accuracy,
+                            attempts: data.attempts,
+                            priority: data.accuracy < 40 ? 'High' : (data.accuracy < 60 ? 'Medium' : 'Low')
+                        });
+                    }
+                }
+            }
+            weakTopics.sort((a,b) => a.accuracy - b.accuracy);
+            
+            let weakHtml = '';
+            if (weakTopics.length > 0) {
+                weakHtml = `<div class="weak-topics-card"><strong>⚠️ Weak Topics (Practice First):</strong>`;
+                for (let w of weakTopics.slice(0, 5)) {
+                    weakHtml += `<div class="weak-topic-item priority-${w.priority.toLowerCase()}" onclick="practiceWeakTopic('${w.topic}')">
+                        <div><strong>📚 ${w.topic}</strong><br><small>Accuracy: ${w.accuracy}% | Attempts: ${w.attempts}</small></div>
+                        <div><span style="background:${w.priority === 'High' ? '#f44336' : (w.priority === 'Medium' ? '#ff9800' : '#4CAF50')}; color:white; padding:4px 12px; border-radius:20px; font-size:12px;">${w.priority}</span></div>
+                    </div>`;
+                }
+                weakHtml += `<small style="display:block; margin-top:10px;">💡 Click any weak topic to practice now!</small></div>`;
+            } else {
+                weakHtml = `<div class="weak-topics-card" style="background:#e8f5e9;"><strong>✅ Great job!</strong> No weak topics detected. Keep practicing!</div>`;
+            }
+            document.getElementById('weakTopicsArea').innerHTML = weakHtml;
+            
+            // Render subjects by category
+            let containerHtml = '';
+            for (let cat of subjectCategories) {
+                containerHtml += `<div class="subject-section">
+                    <div class="section-title">${cat.name}</div>
+                    <div class="subject-grid">`;
+                for (let subj of cat.subjects) {
+                    let completed = 0;
+                    for (let i = 1; i <= subj.totalChapters; i++) {
+                        if (currentUser.completedChapters && currentUser.completedChapters[`${subj.id}_ch${i}`]) completed++;
+                    }
+                    containerHtml += `<a href="04-subject.html?id=${subj.id}" class="subject-card">
+                        <div class="subject-icon">${subj.icon}</div>
+                        <div class="subject-name">${subj.name}</div>
+                        <div class="subject-stats">📖 ${completed}/${subj.totalChapters} chapters</div>
+                        <div class="free-badge">${subj.freeChapters} FREE chapters</div>
+                    </a>`;
+                }
+                containerHtml += `</div></div>`;
+            }
+            document.getElementById('subjectsContainer').innerHTML = containerHtml;
+        }
+        
+        function practiceWeakTopic(topic) {
+            window.location.href = `05-practice.html?topic=${encodeURIComponent(topic)}`;
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = "index.html";
+        }
+        
+        // Update streak
+        let today = new Date().toDateString();
+        if (currentUser.lastActive !== today) {
+            let yesterday = new Date(Date.now() - 86400000).toDateString();
+            if (currentUser.lastActive === yesterday) {
+                currentUser.streak = (currentUser.streak || 0) + 1;
+            } else {
+                currentUser.streak = 1;
+            }
+            currentUser.lastActive = today;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+        
+        updateUI();
+    </script>
+</body>
+</html>

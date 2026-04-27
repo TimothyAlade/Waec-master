@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject - WAEC Master</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f7fb; }
+        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: white; }
+        .logo span { color: #f9a826; }
+        .back-btn { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; text-decoration: none; color: white; font-size: 14px; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .subject-header { text-align: center; margin-bottom: 30px; }
+        .subject-icon { font-size: 80px; }
+        .subject-title { font-size: 32px; margin: 10px 0; }
+        .premium-banner { background: linear-gradient(135deg, #f9a82620, #ff6b6b20); border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 20px; border: 2px solid #f9a826; }
+        .premium-banner a { display: inline-block; margin-top: 10px; background: #f9a826; color: #1a1a2e; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; }
+        .chapter-card { background: white; border-radius: 12px; padding: 15px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; cursor: pointer; }
+        .chapter-card:hover { transform: translateX(5px); background: #f9f9f9; }
+        .free-badge { background: #e8f5e9; color: #4CAF50; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .premium-badge-chapter { background: #fff3e0; color: #ff9800; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .score-badge { background: #4CAF50; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-left: 8px; }
+        .regen-icon { color: #2196F3; margin-left: 5px; font-size: 12px; }
+        @media (max-width: 600px) { .chapter-card { flex-direction: column; gap: 10px; text-align: center; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="03-dashboard.html" class="logo">← WAEC <span>Master</span></a>
+        <a href="03-dashboard.html" class="back-btn">Dashboard</a>
+    </div>
+    
+    <div class="container" id="container">Loading...</div>
+    
+    <script>
+        // All subjects data with topics
+        const subjectsData = {
+            math: { name: "Mathematics", icon: "📐", freeChapters: 4, totalChapters: 12, topics: ["Number Bases", "Algebra", "Quadratic Equations", "Logarithms", "Geometry", "Trigonometry", "Calculus", "Statistics", "Probability", "Vectors", "Matrices", "Coordinate Geometry"] },
+            english: { name: "English Language", icon: "📖", freeChapters: 4, totalChapters: 12, topics: ["Grammar", "Comprehension", "Lexis & Structure", "Essay Writing", "Orals", "Summary", "Spelling", "Punctuation", "Synonyms", "Antonyms", "Idioms", "Letter Writing"] },
+            physics: { name: "Physics", icon: "⚡", freeChapters: 4, totalChapters: 12, topics: ["Mechanics", "Waves", "Optics", "Electricity", "Magnetism", "Thermodynamics", "Modern Physics", "Nuclear Physics", "Sound", "Elasticity", "Gravitation", "Electronics"] },
+            chemistry: { name: "Chemistry", icon: "🧪", freeChapters: 4, totalChapters: 12, topics: ["Atomic Structure", "Periodic Table", "Chemical Bonding", "Stoichiometry", "Acids & Bases", "Organic Chemistry", "Electrolysis", "Kinetics", "Thermochemistry", "Inorganic Chemistry", "Environmental Chem", "Nuclear Chem"] },
+            biology: { name: "Biology", icon: "🧬", freeChapters: 4, totalChapters: 12, topics: ["Cell Biology", "Genetics", "Ecology", "Human Anatomy", "Plant Physiology", "Evolution", "Taxonomy", "Reproduction", "Homeostasis", "Immunology", "Biotechnology", "Conservation"] },
+            economics: { name: "Economics", icon: "📊", freeChapters: 3, totalChapters: 10, topics: ["Microeconomics", "Macroeconomics", "International Trade", "Development", "Money & Banking", "Public Finance", "Economic Systems", "Population", "Labor Economics", "Agricultural Economics"] },
+            government: { name: "Government", icon: "🏛️", freeChapters: 3, totalChapters: 10, topics: ["Political Systems", "Nigerian Govt", "Comparative Politics", "Constitution", "Arms of Govt", "Citizenship", "Political Parties", "Pressure Groups", "Public Admin", "International Orgs"] },
+            crs: { name: "CRS", icon: "⛪", freeChapters: 3, totalChapters: 10, topics: ["Creation Stories", "The Fall", "Abraham", "Moses & Exodus", "Kings of Israel", "The Prophets", "Life of Jesus", "Teachings of Jesus", "The Apostles", "Early Church"] },
+            irs: { name: "IRS", icon: "🕌", freeChapters: 3, totalChapters: 10, topics: ["Qur'an Studies", "Hadith", "Tawhid", "Prophets", "Five Pillars", "Islamic Law", "Islamic History", "Morality", "Worship", "Islamic Culture"] },
+            literature: { name: "Literature", icon: "📚", freeChapters: 3, totalChapters: 10, topics: ["Prose", "Poetry", "Drama", "African Lit", "Literary Criticism", "Shakespeare", "Novels", "Figures of Speech", "Genres", "Literary Terms"] },
+            history: { name: "History", icon: "🏺", freeChapters: 3, totalChapters: 9, topics: ["Nigerian History", "West African History", "Colonial Era", "Pre-colonial Kingdoms", "Independence", "African History", "World History", "Trans-Saharan Trade", "Slave Trade"] },
+            geography: { name: "Geography", icon: "🌍", freeChapters: 3, totalChapters: 9, topics: ["Physical Geography", "Human Geography", "Map Reading", "Climate", "Landforms", "Population", "Economic Geography", "Regional Geography", "GIS"] },
+            french: { name: "French", icon: "🇫🇷", freeChapters: 3, totalChapters: 8, topics: ["Grammar", "Vocabulary", "Comprehension", "Essay", "Translation", "Oral French", "French Culture", "Literature"] },
+            igbo: { name: "Igbo", icon: "📿", freeChapters: 2, totalChapters: 8, topics: ["Grammar", "Comprehension", "Essay", "Proverbs", "Oral Literature", "Igbo Culture", "Translation", "Poetry"] },
+            yoruba: { name: "Yoruba", icon: "🥁", freeChapters: 2, totalChapters: 8, topics: ["Grammar", "Comprehension", "Essay", "Proverbs", "Oral Literature", "Yoruba Culture", "Translation", "Poetry"] },
+            hausa: { name: "Hausa", icon: "🐪", freeChapters: 2, totalChapters: 8, topics: ["Grammar", "Comprehension", "Essay", "Proverbs", "Oral Literature", "Hausa Culture", "Translation", "Poetry"] },
+            arabic: { name: "Arabic", icon: "📜", freeChapters: 2, totalChapters: 8, topics: ["Grammar", "Comprehension", "Translation", "Islamic Texts", "Writing", "Literature", "Culture", "Poetry"] },
+            commerce: { name: "Commerce", icon: "🏪", freeChapters: 3, totalChapters: 9, topics: ["Trade", "Business Units", "Marketing", "Advertising", "Insurance", "Banking", "Stock Exchange", "Transportation", "Communication"] },
+            accounting: { name: "Accounting", icon: "💰", freeChapters: 3, totalChapters: 10, topics: ["Bookkeeping", "Ledger", "Trial Balance", "Financial Statements", "Depreciation", "Partnership", "Company Accounts", "Bank Reconciliation", "Incomplete Records", "Interpretation"] },
+            business: { name: "Business Mgmt", icon: "📈", freeChapters: 3, totalChapters: 8, topics: ["Management Principles", "Organization", "Human Resources", "Marketing Mgmt", "Financial Mgmt", "Operations", "Strategic Mgmt", "Business Ethics"] },
+            insurance: { name: "Insurance", icon: "🛡️", freeChapters: 2, totalChapters: 7, topics: ["Principles", "Life Insurance", "General Insurance", "Marine Insurance", "Motor Insurance", "Underwriting", "Claims"] },
+            marketing: { name: "Marketing", icon: "📢", freeChapters: 2, totalChapters: 7, topics: ["Concepts", "Market Research", "Consumer Behavior", "Product Mgmt", "Pricing", "Distribution", "Promotion"] },
+            agric: { name: "Agric Science", icon: "🌾", freeChapters: 3, totalChapters: 10, topics: ["Crop Production", "Animal Production", "Soil Science", "Agricultural Economics", "Farm Management", "Engineering", "Fisheries", "Forestry", "Poultry", "Agribusiness"] },
+            technical: { name: "Technical Drawing", icon: "✏️", freeChapters: 3, totalChapters: 8, topics: ["Plane Geometry", "Solid Geometry", "Orthographic", "Isometric", "Perspective", "Building Drawing", "Mechanical Drawing", "Architectural"] },
+            computer: { name: "Computer Studies", icon: "💻", freeChapters: 3, totalChapters: 8, topics: ["Hardware", "Software", "Programming", "Networking", "Databases", "Internet", "Cyber Security", "Word Processing"] },
+            electronics: { name: "Electronics", icon: "🔌", freeChapters: 2, totalChapters: 7, topics: ["Components", "Circuits", "Transistors", "Digital Electronics", "Power Supplies", "Amplifiers", "Oscillators"] },
+            woodwork: { name: "Woodwork", icon: "🪵", freeChapters: 2, totalChapters: 6, topics: ["Wood Types", "Tools", "Joint Making", "Furniture Design", "Finishing", "Safety"] },
+            metalwork: { name: "Metalwork", icon: "⚙️", freeChapters: 2, totalChapters: 6, topics: ["Metal Types", "Tools", "Forging", "Welding", "Machining", "Fabrication"] },
+            building: { name: "Building Const", icon: "🏗️", freeChapters: 2, totalChapters: 6, topics: ["Materials", "Foundations", "Walls", "Roofs", "Finishing", "Site Management"] },
+            auto: { name: "Auto Mechanics", icon: "🚗", freeChapters: 2, totalChapters: 7, topics: ["Engine Parts", "Fuel System", "Electrical", "Brakes", "Suspension", "Transmission", "Maintenance"] },
+            food: { name: "Food & Nutrition", icon: "🍲", freeChapters: 2, totalChapters: 7, topics: ["Food Groups", "Nutrients", "Meal Planning", "Food Preservation", "Cooking Methods", "Dietetics", "Food Safety"] },
+            clothing: { name: "Clothing & Textile", icon: "👗", freeChapters: 2, totalChapters: 6, topics: ["Fabrics", "Sewing", "Pattern Making", "Fashion Design", "Textile Production", "Dyeing"] },
+            home_eco: { name: "Home Economics", icon: "🏠", freeChapters: 2, totalChapters: 7, topics: ["Home Management", "Family Living", "Consumer Education", "Textiles", "Food & Nutrition", "Child Development", "Interior Design"] },
+            health: { name: "Health Education", icon: "🏥", freeChapters: 2, totalChapters: 7, topics: ["Personal Health", "Community Health", "First Aid", "Nutrition", "Disease Prevention", "Environmental Health", "Health Promotion"] },
+            fine_art: { name: "Fine Art", icon: "🎨", freeChapters: 2, totalChapters: 7, topics: ["Drawing", "Painting", "Sculpture", "Art History", "Design", "Printmaking", "Ceramics"] },
+            music: { name: "Music", icon: "🎵", freeChapters: 2, totalChapters: 7, topics: ["Music Theory", "History", "Instruments", "Composition", "Performance", "African Music", "Western Music"] },
+            physical: { name: "Physical Edu", icon: "⚽", freeChapters: 2, totalChapters: 6, topics: ["Sports", "Fitness", "Rules", "Anatomy", "First Aid", "Coaching"] }
+        };
+        
+        let urlParams = new URLSearchParams(window.location.search);
+        let subjectId = urlParams.get('id');
+        let subject = subjectsData[subjectId];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) window.location.href = "01-login.html";
+        
+        function render() {
+            if (!subject) {
+                document.getElementById('container').innerHTML = '<div style="text-align:center;padding:50px;"><h2>Subject not found</h2><a href="03-dashboard.html">Back to Dashboard</a></div>';
+                return;
+            }
+            
+            let html = `<div class="subject-header">
+                <div class="subject-icon">${subject.icon}</div>
+                <div class="subject-title">${subject.name}</div>
+            </div>`;
+            
+            if (!currentUser.isPremium) {
+                let premiumChapters = subject.totalChapters - subject.freeChapters;
+                html += `<div class="premium-banner">
+                    <strong>🔒 ${premiumChapters} Premium Chapters Locked</strong><br>
+                    Upgrade to unlock all chapters and get INFINITE new questions every retry!
+                    <a href="07-upgrade.html">⭐ Upgrade Now - ₦2,500/month</a>
+                </div>`;
+            } else {
+                html += `<div class="premium-banner" style="background:#e8f5e9; border-color:#4CAF50;">
+                    <strong>⭐ Premium Active!</strong><br>
+                    All ${subject.totalChapters} chapters unlocked. Questions regenerate NEW every practice!
+                </div>`;
+            }
+            
+            for (let i = 1; i <= subject.totalChapters; i++) {
+                let isFree = i <= subject.freeChapters;
+                let isUnlocked = isFree || currentUser.isPremium;
+                let completedScore = currentUser.chapterScores?.[`${subjectId}_ch${i}`];
+                let attempts = currentUser.chapterAttempts?.[`${subjectId}_ch${i}`] || 0;
+                let topicName = subject.topics[i-1];
+                
+                html += `<div class="chapter-card" onclick="startPractice('${subjectId}', ${i}, '${topicName}')">
+                    <div>
+                        <span style="font-size:20px;margin-right:10px;">${completedScore ? '✅' : (isUnlocked ? '📖' : '🔒')}</span>
+                        <strong>Chapter ${i}: ${topicName}</strong>
+                        ${attempts > 0 ? `<span class="regen-icon">🔄 Attempts: ${attempts}</span>` : ''}
+                    </div>
+                    <div>
+                        <span class="${isFree ? 'free-badge' : 'premium-badge-chapter'}">${isFree ? 'FREE' : 'PREMIUM'}</span>
+                        ${completedScore ? `<span class="score-badge">Score: ${completedScore}%</span>` : ''}
+                    </div>
+                </div>`;
+            }
+            
+            document.getElementById('container').innerHTML = html;
+        }
+        
+        function startPractice(subjectId, chapterNum, topicName) {
+            let subject = subjectsData[subjectId];
+            let isFree = chapterNum <= subject.freeChapters;
+            let isUnlocked = isFree || currentUser.isPremium;
+            
+            if (!isUnlocked) {
+                window.location.href = "07-upgrade.html";
+                return;
+            }
+            
+            window.location.href = `05-practice.html?subject=${subjectId}&chapter=${chapterNum}&topic=${encodeURIComponent(topicName)}`;
+        }
+        
+        window.startPractice = startPractice;
+        render();
+    </script>
+</body>
+</html>

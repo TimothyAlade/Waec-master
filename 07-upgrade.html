@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - WAEC Master</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: auto; padding: 40px 20px; }
+        
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 48px; margin-bottom: 10px; }
+        .header p { font-size: 18px; opacity: 0.9; }
+        
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .pricing-card { background: white; border-radius: 25px; padding: 30px; text-align: center; transition: transform 0.3s; position: relative; }
+        .pricing-card:hover { transform: translateY(-10px); }
+        .pricing-card.popular { border: 3px solid #f9a826; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .popular-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #f9a826; color: #1a1a2e; padding: 5px 20px; border-radius: 30px; font-weight: bold; font-size: 14px; }
+        
+        .plan-icon { font-size: 50px; margin-bottom: 15px; }
+        .plan-name { font-size: 24px; font-weight: bold; color: #1a1a2e; margin-bottom: 10px; }
+        .price { font-size: 48px; color: #f9a826; font-weight: bold; margin: 15px 0; }
+        .price small { font-size: 16px; color: #666; }
+        .period { font-size: 14px; color: #888; }
+        .description { color: #666; font-size: 14px; margin-bottom: 20px; }
+        
+        .features { text-align: left; margin: 20px 0; padding-top: 15px; border-top: 1px solid #eee; }
+        .features li { margin: 10px 0; list-style: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .features li:before { content: "✓"; color: #4CAF50; font-weight: bold; font-size: 16px; }
+        
+        .btn { display: inline-block; padding: 14px 30px; background: linear-gradient(135deg, #764ba2, #667eea); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; margin-top: 10px; width: 100%; }
+        .btn-premium { background: linear-gradient(135deg, #f9a826, #ff6b6b); }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .back-link { display: block; text-align: center; margin-top: 30px; color: white; text-decoration: none; font-size: 16px; }
+        .back-link:hover { text-decoration: underline; }
+        
+        .savings { background: #4CAF50; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; }
+        .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #f9a826; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @media (max-width: 768px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: auto; } .header h1 { font-size: 32px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⭐ Unlock Premium Access</h1>
+            <p>Get unlimited practice with brand new questions every time!</p>
+        </div>
+        
+        <div class="pricing-grid">
+            <!-- Daily Plan -->
+            <div class="pricing-card">
+                <div class="plan-icon">📱</div>
+                <div class="plan-name">Daily Pass</div>
+                <div class="price">₦200</div>
+                <div class="period">Valid for 24 hours</div>
+                <div class="description">Perfect for exam day preparation</div>
+                <div class="features">
+                    <li>All 39 WAEC Subjects</li>
+                    <li>All Premium Chapters</li>
+                    <li>New Questions Every Time</li>
+                    <li>Detailed Explanations</li>
+                </div>
+                <button class="btn" onclick="processPayment('daily', 200, 1)">Get Daily Pass →</button>
+            </div>
+            
+            <!-- Weekly Plan -->
+            <div class="pricing-card">
+                <div class="plan-icon">📅</div>
+                <div class="plan-name">Weekly Pass</div>
+                <div class="price">₦1,000</div>
+                <div class="period">Valid for 7 days</div>
+                <div class="description">Best for weekly exam preparation</div>
+                <div class="features">
+                    <li>All 39 WAEC Subjects</li>
+                    <li>All Premium Chapters</li>
+                    <li>New Questions Every Time</li>
+                    <li>Detailed Explanations</li>
+                    <li>Weak Area Tracking</li>
+                </div>
+                <button class="btn" onclick="processPayment('weekly', 1000, 7)">Get Weekly Pass →</button>
+            </div>
+            
+            <!-- Monthly Plan (Popular) -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">🔥 MOST POPULAR</div>
+                <div class="plan-icon">⭐</div>
+                <div class="plan-name">Monthly Premium</div>
+                <div class="price">₦2,500</div>
+                <div class="period">Valid for 30 days</div>
+                <div class="description">Best value for serious students</div>
+                <div class="features">
+                    <li>All 39 WAEC Subjects</li>
+                    <li>All Premium Chapters</li>
+                    <li>New Questions Every Time</li>
+                    <li>Detailed Explanations</li>
+                    <li>Weak Area Tracking</li>
+                    <li>Priority Support</li>
+                </div>
+                <button class="btn btn-premium" onclick="processPayment('monthly', 2500, 30)">⭐ Upgrade Now - ₦2,500</button>
+            </div>
+            
+            <!-- Yearly Plan -->
+            <div class="pricing-card">
+                <div class="plan-icon">🎓</div>
+                <div class="plan-name">Yearly Premium</div>
+                <div class="price">₦15,000</div>
+                <div class="period">Valid for 365 days</div>
+                <div class="savings">Save 50% compared to monthly!</div>
+                <div class="description">Best for full academic session</div>
+                <div class="features">
+                    <li>All 39 WAEC Subjects</li>
+                    <li>All Premium Chapters</li>
+                    <li>New Questions Every Time</li>
+                    <li>Detailed Explanations</li>
+                    <li>Weak Area Tracking</li>
+                    <li>Priority Support</li>
+                    <li>Certificate of Completion</li>
+                </div>
+                <button class="btn" onclick="processPayment('yearly', 15000, 365)">Get Yearly Plan →</button>
+            </div>
+        </div>
+        
+        <div style="text-align: center; color: white; margin-top: 30px;">
+            <p>🔒 Secure payment via Flutterwave • Cancel anytime • 7-day money back guarantee</p>
+        </div>
+        
+        <a href="03-dashboard.html" class="back-link">← Back to Dashboard</a>
+    </div>
+    
+    <div id="loadingOverlay" style="display: none;" class="loading-overlay">
+        <div class="spinner"></div>
+        <div style="color: white;">Processing payment...</div>
+    </div>
+
+    <script>
+        // ========== YOUR FLUTTERWAVE PUBLIC KEY ==========
+        // ✅ CORRECTED KEY (removed the extra -X at the end)
+        const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK-0c35e47a817888bb118eb81c282ddb31-x";
+        
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        function loadFlutterwaveScript(callback) {
+            if (window.FlutterwaveCheckout) {
+                callback();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://checkout.flutterwave.com/v3.js';
+            script.onload = callback;
+            script.onerror = function() {
+                alert("Unable to load payment system. Please check your internet connection.");
+                hideLoading();
+            };
+            document.head.appendChild(script);
+        }
+        
+        function activatePremiumManually(plan, amount, duration) {
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            if (!currentUser) {
+                alert("Please login or create an account first!");
+                window.location.href = "01-login.html";
+                return;
+            }
+            
+            // Update user in the users array
+            let users = JSON.parse(localStorage.getItem('waec_users')) || [];
+            let userIndex = users.findIndex(u => u.id === currentUser.id);
+            
+            if (userIndex !== -1) {
+                users[userIndex].isPremium = true;
+                users[userIndex].premiumPlan = plan;
+                users[userIndex].premiumAmount = amount;
+                users[userIndex].premiumExpiry = new Date(Date.now() + duration * 86400000).toISOString();
+                users[userIndex].premiumActivated = new Date().toISOString();
+                localStorage.setItem('waec_users', JSON.stringify(users));
+            }
+            
+            // Update current session
+            currentUser.isPremium = true;
+            currentUser.premiumPlan = plan;
+            currentUser.premiumAmount = amount;
+            currentUser.premiumExpiry = new Date(Date.now() + duration * 86400000).toISOString();
+            currentUser.premiumActivated = new Date().toISOString();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            alert(`🎉 PREMIUM ACTIVATED SUCCESSFULLY!\n\nPlan: ${plan.toUpperCase()}\nAmount: ₦${amount.toLocaleString()}\nValid for: ${duration} days\n\nYou now have access to:\n✓ All 39 WAEC Subjects\n✓ All Premium Chapters\n✓ Brand new questions every retry!\n\nStart practicing now!`);
+            window.location.href = "03-dashboard.html";
+        }
+        
+        function processPayment(plan, amount, duration) {
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            if (!currentUser) {
+                alert("Please login or create an account first!");
+                window.location.href = "01-login.html";
+                return;
+            }
+            
+            // Make sure user has email
+            if (!currentUser.email) {
+                let email = prompt("Please enter your email address for payment receipt:", "");
+                if (!email || !email.includes('@')) {
+                    alert("Please enter a valid email address.");
+                    return;
+                }
+                currentUser.email = email;
+                
+                // Update in users array too
+                let users = JSON.parse(localStorage.getItem('waec_users')) || [];
+                let userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex].email = email;
+                    localStorage.setItem('waec_users', JSON.stringify(users));
+                }
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            
+            // Start payment
+            showLoading();
+            
+            loadFlutterwaveScript(function() {
+                try {
+                    const paymentConfig = {
+                        public_key: FLUTTERWAVE_PUBLIC_KEY,
+                        tx_ref: "WAEC_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8),
+                        amount: amount,
+                        currency: "NGN",
+                        payment_options: "card,ussd,banktransfer,mobilemoney",
+                        redirect_url: window.location.href,
+                        customer: {
+                            email: currentUser.email,
+                            name: currentUser.name || "WAEC Student"
+                        },
+                        customizations: {
+                            title: "WAEC Master Premium",
+                            description: `${plan.toUpperCase()} Plan - ${duration} days access`,
+                            logo: "https://waecmaster.com/logo.png"
+                        },
+                        callback: function(response) {
+                            hideLoading();
+                            console.log("Payment response:", response);
+                            if (response.status === "successful") {
+                                activatePremiumManually(plan, amount, duration);
+                            } else {
+                                alert("Payment failed. Please try again.");
+                            }
+                        },
+                        onclose: function() {
+                            hideLoading();
+                            // User closed modal
+                        }
+                    };
+                    
+                    window.FlutterwaveCheckout(paymentConfig);
+                } catch (error) {
+                    hideLoading();
+                    alert("Payment error: " + error.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

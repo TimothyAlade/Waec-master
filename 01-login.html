@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - WAEC Master</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 400px; margin: auto; padding: 100px 20px; }
+        .card { background: white; border-radius: 30px; padding: 40px; text-align: center; }
+        h1 { color: #764ba2; margin-bottom: 20px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; }
+        input:focus { outline: none; border-color: #764ba2; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #764ba2, #667eea); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .link { margin-top: 20px; display: block; color: #764ba2; text-decoration: none; }
+        .error { color: #f44336; margin-top: 10px; font-size: 14px; }
+        .info-text { margin-top: 20px; font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🔐 Login</h1>
+            <input type="email" id="email" placeholder="Email Address">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <a href="02-signup.html" class="link">Don't have an account? Sign Up</a>
+            <a href="index.html" class="link">← Back to Home</a>
+            <div id="error" class="error"></div>
+            <div class="info-text">Sign up to start practicing WAEC questions!</div>
+        </div>
+    </div>
+    
+    <script>
+        // Load existing users from localStorage
+        function getUsers() {
+            let users = localStorage.getItem('waec_users');
+            return users ? JSON.parse(users) : [];
+        }
+        
+        function login() {
+            let email = document.getElementById('email').value.trim();
+            let password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                document.getElementById('error').innerText = "Please enter email and password";
+                return;
+            }
+            
+            let users = getUsers();
+            let user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                // Don't store password in currentUser
+                let currentUser = {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    isPremium: user.isPremium || false,
+                    premiumExpiry: user.premiumExpiry,
+                    streak: user.streak || 0,
+                    lastActive: new Date().toDateString(),
+                    weakTopics: user.weakTopics || {},
+                    completedChapters: user.completedChapters || {},
+                    chapterAttempts: user.chapterAttempts || {},
+                    chapterScores: user.chapterScores || {},
+                    totalQuestions: user.totalQuestions || 0,
+                    totalCorrect: user.totalCorrect || 0
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                window.location.href = "03-dashboard.html";
+            } else {
+                document.getElementById('error').innerText = "Invalid email or password. Please sign up first.";
+            }
+        }
+    </script>
+</body>
+</html>
